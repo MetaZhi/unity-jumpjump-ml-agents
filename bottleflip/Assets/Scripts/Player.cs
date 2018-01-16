@@ -1,11 +1,13 @@
 ﻿using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
     public Transform Camera;
     public GameObject Stage;
+    public Text ScoreText;
     public float Factor = 200;
     private Rigidbody _rigidbody;
     private float _startTime;
@@ -13,6 +15,7 @@ public class Player : MonoBehaviour
 
     private Vector3 _distanceToCamera;
     private GameObject _lastStage;
+    private Collider _lastCollisionStage;
 
     // Use this for initialization
     void Start()
@@ -21,6 +24,9 @@ public class Player : MonoBehaviour
         _rigidbody.centerOfMass = new Vector3(0, 0.01f, 0);
         _distanceToCamera = Camera.position - transform.position;
         _lastStage = Stage;
+        _lastCollisionStage = Stage.GetComponent<Collider>();
+
+        SpawnNextStage();
     }
 
     // Update is called once per frame
@@ -53,9 +59,13 @@ public class Player : MonoBehaviour
         }
         else
         {
-            _score++;
-            SpawnNextStage();
-            MoveCamera();
+            if (_lastCollisionStage != collision.collider)
+            {
+                _score++;
+                ScoreText.text = _score.ToString();
+                SpawnNextStage();
+                MoveCamera();
+            }
         }
     }
 
@@ -68,8 +78,15 @@ public class Player : MonoBehaviour
     private void SpawnNextStage()
     {
         var stage = Instantiate(Stage);
-        stage.transform.position = _lastStage.transform.position + new Vector3(Random.Range(1.1f,5),0,0);
+        stage.transform.position = _lastStage.transform.position + new Vector3(Random.Range(1.1f, 5), 0, 0);
         _lastStage = stage;
+
+        //random scale
+        var originalScale = Stage.transform.localScale;
+        var scaleFactor = Random.Range(0.5f, 1);
+        var newScale = originalScale * scaleFactor;
+        newScale.y = originalScale.y;
+        _lastStage.transform.localScale = newScale;
     }
 
     private void Restart()
