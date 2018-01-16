@@ -26,6 +26,9 @@ public class Player : MonoBehaviour
         _lastStage = Stage;
         _lastCollisionStage = Stage.GetComponent<Collider>();
 
+        _lastStage.GetComponent<Renderer>().material.color =
+            new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
+
         SpawnNextStage();
     }
 
@@ -78,7 +81,7 @@ public class Player : MonoBehaviour
     private void SpawnNextStage()
     {
         var stage = Instantiate(Stage);
-        stage.transform.position = _lastStage.transform.position + new Vector3(Random.Range(1.1f, 5), 0, 0);
+        stage.transform.position = _lastStage.transform.position + new Vector3(Random.Range(1.1f, 3), 0, 0);
         _lastStage = stage;
 
         //random scale
@@ -87,6 +90,10 @@ public class Player : MonoBehaviour
         var newScale = originalScale * scaleFactor;
         newScale.y = originalScale.y;
         _lastStage.transform.localScale = newScale;
+
+        //random color
+        _lastStage.GetComponent<Renderer>().material.color =
+            new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
     }
 
     private void Restart()
