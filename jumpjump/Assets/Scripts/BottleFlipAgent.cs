@@ -83,11 +83,14 @@ public class BottleFlipAgent : Agent
     public override void AgentReset()
     {
         _rigidbody.velocity = Vector3.zero;
+        _rigidbody.isKinematic = true;
+        transform.position = _playerStartPosition;
+        Camera.position = transform.position + _distanceToCamera;
+        _rigidbody.isKinematic = false;
         foreach (var s in _spawnStages)
         {
-            Destroy(s);
+            s.SetActive(false);
         }
-        _spawnStages.Clear();
 
         _currentStage = Stage;
         _currentStage.GetComponent<Renderer>().material.color =
@@ -102,8 +105,6 @@ public class BottleFlipAgent : Agent
         TotalScoreText.text = _score.ToString();
         _disableInput = false;
 
-        transform.position = _playerStartPosition;
-        Camera.position = transform.position + _distanceToCamera;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -161,9 +162,28 @@ public class BottleFlipAgent : Agent
         _tween = Camera.DOMove(nextPosition, 1f);
     }
 
+    GameObject GetStage()
+    {
+        GameObject nextStage = null;
+        if (_spawnStages.Count < 10)
+        {
+            nextStage = Instantiate(Stage);
+            _spawnStages.Add(nextStage);
+        }
+        else
+        {
+            nextStage = _spawnStages[0];
+            nextStage.SetActive(true);
+            _spawnStages.RemoveAt(0);
+            _spawnStages.Add(nextStage);
+        }
+
+        return nextStage;
+    }
+
     private void SpawnNextStage()
     {
-        var nextStage = Instantiate(Stage);
+        var nextStage = GetStage();
         nextStage.transform.position = _currentStage.transform.position + _direction * Random.Range(1.1f, _academy.MaxDistance);
 
         //random scale
@@ -178,14 +198,6 @@ public class BottleFlipAgent : Agent
             new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
 
         _nextStage = nextStage;
-
-        if (_spawnStages.Count > 10)
-        {
-            Destroy(_spawnStages[0]);
-            _spawnStages.RemoveAt(0);
-        }
-
-        _spawnStages.Add(_nextStage);
     }
 
     private void RandomDirection()
