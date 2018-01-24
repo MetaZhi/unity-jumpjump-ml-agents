@@ -1,0 +1,6 @@
+build/
+.ipynb_checkpoints/
+summaries/
+unity-environment.log
+*.pyc
+models/
