@@ -178,6 +178,13 @@ public class BottleFlipAgent : Agent
             new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
 
         _nextStage = nextStage;
+
+        if (_spawnStages.Count > 10)
+        {
+            Destroy(_spawnStages[0]);
+            _spawnStages.RemoveAt(0);
+        }
+
         _spawnStages.Add(_nextStage);
     }
 
