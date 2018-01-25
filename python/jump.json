@@ -1,6 +1,6 @@
 {
     "measure" : "reward",
-    "thresholds" : [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    "thresholds" : [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
     "min_lesson_length" : 2,
     "signal_smoothing" : true, 
     "parameters" : 

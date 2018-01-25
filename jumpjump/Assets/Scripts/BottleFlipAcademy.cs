@@ -12,8 +12,7 @@ public class BottleFlipAcademy : Academy
     {
         MaxDistance = resetParameters["max_distance"];
         MinScale = resetParameters["min_scale"];
-        IsRandomDirection = !(resetParameters["random_direction"] > 0);
-        Debug.Log($"AcademyReset: MaxDistance[{MaxDistance}];\t MinScale[{MinScale}];\t IsRandomDirection[{IsRandomDirection}]");
+        IsRandomDirection = resetParameters["random_direction"] > 0;
     }
 
     public override void AcademyStep()
