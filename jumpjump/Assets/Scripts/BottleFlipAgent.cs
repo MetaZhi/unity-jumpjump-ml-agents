@@ -30,6 +30,7 @@ public class BottleFlipAgent : Agent
     private bool _disableInput = true;
     private int _score;
     private BottleFlipAcademy _academy;
+    private int _lastReward = 1;
 
     public override void InitializeAgent()
     {
@@ -102,9 +103,9 @@ public class BottleFlipAgent : Agent
 
         SpawnNextStage();
         _score = 0;
+        _lastReward = 1;
         TotalScoreText.text = _score.ToString();
         _disableInput = false;
-
     }
 
     void OnCollisionEnter(Collision collision)
@@ -120,14 +121,10 @@ public class BottleFlipAgent : Agent
                 var contacts = collision.contacts;
 
                 //check if player's feet on the stage
-                if (contacts.Length == 1 && Math.Abs(contacts[0].point.y) < 0.05f)
+                if (contacts.Length == 1 && Mathf.Abs(contacts[0].point.y) < 0.05f)
                 {
                     _currentStage = collision.gameObject;
-                    reward += 1;
-                    _score += 1;
-
-                    TotalScoreText.text = _score.ToString();
-
+                    AddScore(contacts);
                     RandomDirection();
                     SpawnNextStage();
                     MoveCamera();
@@ -144,7 +141,7 @@ public class BottleFlipAgent : Agent
                 var contacts = collision.contacts;
 
                 //check if player's feet on the stage
-                if (contacts.Length == 1 && Math.Abs(contacts[0].point.y) < 0.05f)
+                if (contacts.Length == 1 && Mathf.Abs(contacts[0].point.y) < 0.05f)
                 {
                     _disableInput = false;
                 }
@@ -153,6 +150,35 @@ public class BottleFlipAgent : Agent
                     Restart();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// If you jump to the center of the box, the score will multiply the last reward score.
+    /// </summary>
+    private void AddScore(ContactPoint[] contacts)
+    {
+        if (contacts.Length > 0)
+        {
+            var hitPoint = contacts[0].point;
+            hitPoint.y = 0;
+
+            var stagePos = _currentStage.transform.position;
+            stagePos.y = 0;
+
+            var precision = Vector3.Distance(hitPoint, stagePos);
+            if (precision < 0.1)
+            {
+                _lastReward *= 2;
+                reward += 1;
+            }
+            else
+            {
+                _lastReward = 1;
+                reward += 0.5f;
+            }
+            _score += _lastReward;
+            TotalScoreText.text = _score.ToString();
         }
     }
 
@@ -184,7 +210,8 @@ public class BottleFlipAgent : Agent
     private void SpawnNextStage()
     {
         var nextStage = GetStage();
-        nextStage.transform.position = _currentStage.transform.position + _direction * Random.Range(1.1f, _academy.MaxDistance);
+        nextStage.transform.position =
+            _currentStage.transform.position + _direction * Random.Range(1.1f, _academy.MaxDistance);
 
         //random scale
         var originalScale = Stage.transform.localScale;
