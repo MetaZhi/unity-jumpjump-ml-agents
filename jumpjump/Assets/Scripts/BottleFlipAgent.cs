@@ -212,7 +212,7 @@ public class BottleFlipAgent : Agent
     private void Restart()
     {
         reward -= 1;
-        done = true;
+        _academy.done = true;
     }
 
     void OnCollisionExit(Collision collision)
