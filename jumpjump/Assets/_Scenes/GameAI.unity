@@ -703,8 +703,8 @@ MonoBehaviour:
   waitTime: 0
   isInference: 1
   trainingConfiguration:
-    width: 320
-    height: 180
+    width: 1280
+    height: 720
     qualityLevel: 1
     timeScale: 100
     targetFrameRate: -1
@@ -974,7 +974,7 @@ MonoBehaviour:
     - 
     actionSpaceType: 1
     stateSpaceType: 1
-  brainType: 3
+  brainType: 2
   CoreBrains:
   - {fileID: 1339266956}
   - {fileID: 603643013}
@@ -1006,9 +1006,13 @@ MonoBehaviour:
   m_Name: (Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)(Clone)
   m_EditorClassIdentifier: 
   broadcast: 1
-  graphModel: {fileID: 4900000, guid: 98309d9fb83b8d442bf9b81b70aa1b7c, type: 3}
+  graphModel: {fileID: 4900000, guid: 731f65b3bf56a5c498e60ec85921e779, type: 3}
   graphScope: 
-  graphPlaceholders: []
+  graphPlaceholders:
+  - name: epsilon
+    valueType: 1
+    minValue: 0
+    maxValue: 0
   BatchSizePlaceholderName: batch_size
   StatePlacholderName: state
   RecurrentInPlaceholderName: recurrent_in

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class BottleFlipAgent : Agent
@@ -12,8 +10,6 @@ public class BottleFlipAgent : Agent
     public Transform Camera;
     public bool IsMoveCamera = false;
     public GameObject Stage;
-    public Text SingleScoreText;
-    public Text TotalScoreText;
     public GameObject Particle;
     public float Factor = 5;
     public Transform Ground;
@@ -25,7 +21,6 @@ public class BottleFlipAgent : Agent
 
     private Vector3 _direction;
 
-    private float _scoreAnimStartTime;
     private Vector3 _playerStartPosition;
     private GameObject _nextStage;
     List<GameObject> _spawnStages = new List<GameObject>();
@@ -53,7 +48,7 @@ public class BottleFlipAgent : Agent
     public override List<float> CollectState()
     {
         List<float> state = new List<float>();
-        if (_direction.x == 1)
+        if (_direction.x > 0.5)
             state.Add(_nextStage.transform.localPosition.x - transform.localPosition.x);
         else
             state.Add(_nextStage.transform.localPosition.z - transform.localPosition.z);
@@ -109,7 +104,6 @@ public class BottleFlipAgent : Agent
         MoveGround();
         _score = 0;
         _lastReward = 1;
-        TotalScoreText.text = _score.ToString();
         _disableInput = false;
     }
 
@@ -150,6 +144,7 @@ public class BottleFlipAgent : Agent
                 if (contacts.Length == 1 && Mathf.Abs(contacts[0].point.y) < 0.05f)
                 {
                     _disableInput = false;
+                    reward -= 0.1f;
                 }
                 else // body just collides with this box
                 {
@@ -157,6 +152,10 @@ public class BottleFlipAgent : Agent
                 }
             }
         }
+
+        Monitor.Log("LastScore", _lastReward, MonitorType.text, transform);
+        Monitor.Log("Score", _score, MonitorType.text, transform);
+        Monitor.Log("Reward", reward, MonitorType.slider, transform);
     }
 
     /// <summary>
@@ -169,7 +168,7 @@ public class BottleFlipAgent : Agent
             var hitPoint = contacts[0].point;
             hitPoint.y = 0;
 
-            var stagePos = _currentStage.transform.localPosition;
+            var stagePos = _currentStage.transform.position;
             stagePos.y = 0;
 
             var precision = Vector3.Distance(hitPoint, stagePos);
@@ -184,7 +183,6 @@ public class BottleFlipAgent : Agent
                 reward += 0.5f;
             }
             _score += _lastReward;
-            TotalScoreText.text = _score.ToString();
         }
     }
 
@@ -202,7 +200,7 @@ public class BottleFlipAgent : Agent
 
     GameObject GetStage()
     {
-        GameObject nextStage = null;
+        GameObject nextStage;
         if (_spawnStages.Count < 10)
         {
             nextStage = Instantiate(Stage);
