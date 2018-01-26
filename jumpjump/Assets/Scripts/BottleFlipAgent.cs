@@ -10,11 +10,14 @@ public class BottleFlipAgent : Agent
     public Transform Body;
     public Transform Head;
     public Transform Camera;
+    public bool IsMoveCamera = false;
     public GameObject Stage;
     public Text SingleScoreText;
     public Text TotalScoreText;
     public GameObject Particle;
     public float Factor = 5;
+    public Transform Ground;
+
     private Rigidbody _rigidbody;
 
     private Vector3 _distanceToCamera;
@@ -34,7 +37,6 @@ public class BottleFlipAgent : Agent
 
     public override void InitializeAgent()
     {
-        Debug.Log("InitializeAgent");
         _playerStartPosition = transform.localPosition;
         InitGame();
     }
@@ -51,10 +53,11 @@ public class BottleFlipAgent : Agent
     public override List<float> CollectState()
     {
         List<float> state = new List<float>();
-        state.Add(transform.localPosition.x);
-        state.Add(transform.localPosition.z);
-        state.Add(_nextStage.transform.localPosition.x);
-        state.Add(_nextStage.transform.localPosition.z);
+        if (_direction.x == 1)
+            state.Add(_nextStage.transform.localPosition.x - transform.localPosition.x);
+        else
+            state.Add(_nextStage.transform.localPosition.z - transform.localPosition.z);
+
         state.Add(_nextStage.transform.localScale.x);
 
         return state;
@@ -85,8 +88,9 @@ public class BottleFlipAgent : Agent
     {
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.isKinematic = true;
-        transform.position = _playerStartPosition;
-        Camera.position = transform.position + _distanceToCamera;
+        transform.localPosition = _playerStartPosition;
+        if (IsMoveCamera)
+            Camera.position = transform.position + _distanceToCamera;
         _rigidbody.isKinematic = false;
         foreach (var s in _spawnStages)
         {
@@ -102,6 +106,7 @@ public class BottleFlipAgent : Agent
         _tween?.Kill();
 
         SpawnNextStage();
+        MoveGround();
         _score = 0;
         _lastReward = 1;
         TotalScoreText.text = _score.ToString();
@@ -128,6 +133,7 @@ public class BottleFlipAgent : Agent
                     RandomDirection();
                     SpawnNextStage();
                     MoveCamera();
+                    MoveGround();
 
                     _disableInput = false;
                 }
@@ -163,7 +169,7 @@ public class BottleFlipAgent : Agent
             var hitPoint = contacts[0].point;
             hitPoint.y = 0;
 
-            var stagePos = _currentStage.transform.position;
+            var stagePos = _currentStage.transform.localPosition;
             stagePos.y = 0;
 
             var precision = Vector3.Distance(hitPoint, stagePos);
@@ -184,8 +190,14 @@ public class BottleFlipAgent : Agent
 
     private void MoveCamera()
     {
+        if (!IsMoveCamera) return;
         var nextPosition = transform.position + _distanceToCamera;
         _tween = Camera.DOMove(nextPosition, 1f);
+    }
+
+    private void MoveGround()
+    {
+        Ground.transform.localPosition = _currentStage.transform.localPosition - new Vector3(0, 0.25f, 0);
     }
 
     GameObject GetStage()
@@ -194,6 +206,7 @@ public class BottleFlipAgent : Agent
         if (_spawnStages.Count < 10)
         {
             nextStage = Instantiate(Stage);
+            nextStage.transform.SetParent(Stage.transform.parent);
             _spawnStages.Add(nextStage);
         }
         else
@@ -210,8 +223,8 @@ public class BottleFlipAgent : Agent
     private void SpawnNextStage()
     {
         var nextStage = GetStage();
-        nextStage.transform.position =
-            _currentStage.transform.position + _direction * Random.Range(1.1f, _academy.MaxDistance);
+        nextStage.transform.localPosition =
+            _currentStage.transform.localPosition + _direction * Random.Range(1.1f, _academy.MaxDistance);
 
         //random scale
         var originalScale = Stage.transform.localScale;
@@ -239,7 +252,7 @@ public class BottleFlipAgent : Agent
     private void Restart()
     {
         reward -= 1;
-        _academy.done = true;
+        done = true;
     }
 
     void OnCollisionExit(Collision collision)
