@@ -244,7 +244,7 @@ public class BottleFlipAgent : Agent
             else
             {
                 _lastReward = 1;
-                reward += 0.5f;
+                reward += 0.1f;
             }
             _score += _lastReward;
         }
