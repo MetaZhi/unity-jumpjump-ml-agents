@@ -445,7 +445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brain: {fileID: 0}
   observations: []
-  maxStep: 0
+  maxStep: 100
   resetOnDone: 1
   reward: 0
   done: 0
@@ -463,6 +463,7 @@ MonoBehaviour:
   Particle: {fileID: 1313386261099592}
   Factor: 5
   Ground: {fileID: 4383650570194860}
+  logs: []
 --- !u!135 &135745791972844112
 SphereCollider:
   m_ObjectHideFlags: 1
