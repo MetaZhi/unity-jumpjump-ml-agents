@@ -1,0 +1,12 @@
+{
+    "measure" : "reward",
+    "thresholds" : [5,5,5,5,5,5,5,5,5,5,5],
+    "min_lesson_length" : 2,
+    "signal_smoothing" : true, 
+    "parameters" : 
+    {
+        "max_distance" : [1.5,1.5,1.5,1.5,2,2,2,2,3,3,3,3],
+        "min_scale" :    [1,0.9,0.7,0.5,1,0.9,0.7,0.5,1,0.9,0.7,0.5],
+        "random_direction":[0,0,0,0,0,0,0,0,0,0,0,0]
+    }
+}

@@ -341,16 +341,13 @@ public abstract class Academy : MonoBehaviour
 
             DecideAction();
 
+            AcademyStep();
+
+            foreach (Brain brain in brains)
+            {
+                brain.Step();
+            }
         }
-
-
-        AcademyStep();
-
-        foreach (Brain brain in brains)
-        {
-            brain.Step();
-        }
-
     }
 
     private static void GetBrains(GameObject gameObject, List<Brain> brains)
