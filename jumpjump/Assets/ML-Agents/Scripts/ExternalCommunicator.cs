@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.IO;
+using Object = UnityEngine.Object;
 
 
 /// Responsible for communication with Python API.
@@ -306,7 +308,17 @@ public class ExternalCommunicator : Communicator
         // TO MODIFY	--------------------------------------------
         sender.Send(Encoding.ASCII.GetBytes("STEPPING"));
         string a = Receive();
-        AgentMessage agentMessage = JsonConvert.DeserializeObject<AgentMessage>(a);
+        AgentMessage agentMessage = null;
+        try
+        {
+            agentMessage = JsonConvert.DeserializeObject<AgentMessage>(a);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(a);
+            Debug.Log(e);
+            Application.Quit();
+        }
 
         foreach (Brain brain in brains)
         {

@@ -4,21 +4,6 @@ using DG.Tweening;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-class Counter
-{
-    public static List<int> skippedFrame = new List<int>();
-
-    public static void Add(int count)
-    {
-        if (count <= 0)
-            return;
-
-        skippedFrame.Add(count);
-        if (skippedFrame.Count % 100 == 0)
-            Debug.Log(skippedFrame.Average());
-    }
-}
-
 public class BottleFlipAgent : Agent
 {
     public Transform Body;
@@ -39,7 +24,7 @@ public class BottleFlipAgent : Agent
 
     private Vector3 _playerStartPosition;
     private GameObject _nextStage;
-    List<GameObject> _spawnStages = new List<GameObject>();
+    Queue<GameObject> _spawnStages = new Queue<GameObject>();
     private Tweener _tween;
     private bool _enableInput = true;
     private int _score;
@@ -48,10 +33,11 @@ public class BottleFlipAgent : Agent
 
     //for debug
     private int _actionCount;
-
     private int _biggestActionCount = 137;
     public List<string> logs = new List<string>();
+#if ENABLE_LOG
     private float _lastElapse;
+#endif
 
     public override void InitializeAgent()
     {
@@ -96,9 +82,7 @@ public class BottleFlipAgent : Agent
         // player is in the air, stop jumping
         if (!_enableInput)
             return;
-#if UNITY_EDITOR
-        Counter.Add(_actionCount);
-#endif
+
         if (_actionCount > _biggestActionCount)
         {
             _biggestActionCount = _actionCount;
@@ -113,17 +97,23 @@ public class BottleFlipAgent : Agent
         _actionCount = 0;
         logs.Clear();
         elapse = Mathf.Clamp(elapse, 0.1f, 1);
+#if ENABLE_LOG
         _lastElapse = elapse;
+#endif
 
         var dir = _direction + new Vector3(0, 1.5f, 0);
 
         _rigidbody.AddForce(dir * elapse * Factor, ForceMode.Impulse);
+#if ENABLE_LOG
         AddLog($"Action:{_lastElapse};Player:{transform.localPosition};Box:{_nextStage.transform.localPosition}");
+#endif
     }
 
     public override void AgentReset()
     {
+#if ENABLE_LOG
         AddLog($"(AgentReset)Player Position:{transform.localPosition}");
+#endif
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.isKinematic = true;
         transform.localPosition = _playerStartPosition;
@@ -153,7 +143,9 @@ public class BottleFlipAgent : Agent
     {
         if (collision.gameObject.name == "Ground")
         {
+#if ENABLE_LOG
             AddLog($"Collide Ground({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
             Restart();
         }
         else
@@ -165,8 +157,10 @@ public class BottleFlipAgent : Agent
                 //check if player's feet on the stage
                 if (contacts.Length == 1 && contacts[0].normal == Vector3.up)
                 {
+#if ENABLE_LOG
                     AddLog(
                         $"Collide _nextStage top({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
                     _currentStage = collision.gameObject;
                     AddScore(contacts);
                     RandomDirection();
@@ -175,12 +169,16 @@ public class BottleFlipAgent : Agent
                     MoveGround();
 
                     StartReceivingAction();
+#if ENABLE_LOG
                     AddLog("EnableInput(_currentStage != collision.gameObject)");
+#endif
                 }
                 else // body collides with the box
                 {
+#if ENABLE_LOG
                     AddLog(
                         $"Collide _nextStage side({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
                     Restart();
                 }
             }
@@ -191,22 +189,30 @@ public class BottleFlipAgent : Agent
                 //check if player's feet on the stage
                 if (contacts.Length == 1 && contacts[0].normal == Vector3.up)
                 {
+#if ENABLE_LOG
                     AddLog(
                         $"Collide _currentStage top({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
                     StartReceivingAction();
+#if ENABLE_LOG
                     AddLog("EnableInput(still on the same box)");
+#endif
                 }
                 else // body just collides with this box
                 {
+#if ENABLE_LOG
                     AddLog(
                         $"Collide _currentStage side({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
                     Restart();
                 }
             }
             else
             {
+#if ENABLE_LOG
                 AddLog(
                     $"Collide may be previous box({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
                 Restart();
             }
         }
@@ -263,14 +269,13 @@ public class BottleFlipAgent : Agent
         {
             nextStage = Instantiate(Stage);
             nextStage.transform.SetParent(Stage.transform.parent);
-            _spawnStages.Add(nextStage);
+            _spawnStages.Enqueue(nextStage);
         }
         else
         {
-            nextStage = _spawnStages[0];
+            nextStage = _spawnStages.Dequeue();
             nextStage.SetActive(true);
-            _spawnStages.RemoveAt(0);
-            _spawnStages.Add(nextStage);
+            _spawnStages.Enqueue(nextStage);
         }
 
         return nextStage;
@@ -314,12 +319,20 @@ public class BottleFlipAgent : Agent
 
     void OnCollisionExit(Collision collision)
     {
-        AddLog(
-            $"OnCollisionExit({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
         if (collision.gameObject.name.Contains("Cube"))
         {
             StopReceivingAction();
-            AddLog("DisableInput(OnCollisionExit)");
+#if ENABLE_LOG
+            AddLog(
+                $"DisableInput(OnCollisionExit):OnCollisionExit({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
+        }
+        else
+        {
+#if ENABLE_LOG
+            AddLog(
+                $"OnCollisionExit({collision.gameObject.name}:{collision.gameObject.GetInstanceID()})");
+#endif
         }
     }
 
@@ -346,7 +359,7 @@ public class BottleFlipAgent : Agent
         // receive no action from barin
         // UnsubscribeBarin();
     }
-
+    
     void SubscribeBrain()
     {
         AddLog("SubscribeBrain");
