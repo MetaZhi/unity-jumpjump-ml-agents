@@ -330,8 +330,9 @@ class UnityEnvironment(object):
         action_message = {"action": action, "memory": memory, "value": value}
         self._send_pack(json.dumps(action_message).encode('utf-8'))
 
-    def _send_pack(self, msg):
-        send_msg = struct.pack("is", len(msg), msg)
+    def _send_pack(self, s):
+        send_msg = struct.pack("!i%ds" % (len(s),), len(s), s)
+        print(send_msg)
         self._conn.send(send_msg)
 
     @staticmethod
