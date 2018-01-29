@@ -209,7 +209,36 @@ public class ExternalCommunicator : Communicator
     {
         int location = sender.Receive(messageHolder);
         string message = Encoding.ASCII.GetString(messageHolder, 0, location);
+        Debug.Log(message);
         return message;
+
+        /*
+        int receivedLength = 0;
+        int count = sender.Receive(messageHolder);
+        receivedLength += count - 4;
+        var packageLength = BitConverter.ToInt32(messageHolder, 0);
+
+        Debug.Log($"Received Count: {receivedLength}/{packageLength}");
+        if (receivedLength >= packageLength)
+        {
+            string message = Encoding.UTF8.GetString(messageHolder, 4, packageLength);
+            return message;
+        }
+
+        using (MemoryStream stream = new MemoryStream())
+        {
+            stream.Write(messageHolder, 4, count - 4);
+            while (receivedLength < packageLength)
+            {
+                count = sender.Receive(messageHolder);
+                receivedLength += count;
+                stream.Write(messageHolder, 0, count);
+                Debug.Log($"Received Count: {receivedLength}/{packageLength}");
+            }
+            string message = Encoding.UTF8.GetString(stream.ToArray(), 0, packageLength);
+            return message;
+        }
+        */
     }
 
 
