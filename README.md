@@ -5,7 +5,7 @@ The lite edition of JumpJump developed by Unity3d with AI developed by ml-agents
 
 # Develop record
 [English](https://connect.unity.com/p/jump-tiao-yi-tiao-with-ml-agents-wip)  
-[中文马上就有](https://github.com/zhenghongzhi/unity-jumpjump-ml-agents/blob/master/Record%20-%20Chinese.md)
+[Unity3d开发跳一跳AI(ML-agents)全纪录](https://github.com/zhenghongzhi/unity-jumpjump-ml-agents/blob/master/Record%20-%20Chinese.md)
 
 欢迎关注“洪流学堂”微信公众号
 ---
