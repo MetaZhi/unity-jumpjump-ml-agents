@@ -219,7 +219,7 @@ class UnityEnvironment(object):
         """
         s = self._recv_bytes()
         s = self._process_pixels(image_bytes=s, bw=bw)
-        self._conn.send(b"RECEIVED")
+        self._send_pack(b"RECEIVED")
         return s
 
     def _get_state_dict(self):
@@ -228,7 +228,7 @@ class UnityEnvironment(object):
         :return:
         """
         state = self._recv_bytes().decode('utf-8')
-        self._conn.send(b"RECEIVED")
+        self._send_pack(b"RECEIVED")
         state_dict = json.loads(state)
         return state_dict
 
@@ -257,12 +257,12 @@ class UnityEnvironment(object):
                 raise UnityEnvironmentException("The parameter '{0}' is not a valid parameter.".format(k))
 
         if self._loaded:
-            self._conn.send(b"RESET")
+            self._send_pack(b"RESET")
             try:
                 self._conn.recv(self._buffer_size)
             except socket.timeout as e:
                 raise UnityTimeOutException("The environment took too long to respond.", self._log_path)
-            self._conn.send(json.dumps({"train_model": train_mode, "parameters": config}).encode('utf-8'))
+            self._send_pack(json.dumps({"train_model": train_mode, "parameters": config}).encode('utf-8'))
             return self._get_state()
         else:
             raise UnityEnvironmentException("No Unity environment is loaded.")
@@ -328,10 +328,11 @@ class UnityEnvironment(object):
         except socket.timeout as e:
             raise UnityTimeOutException("The environment took too long to respond.", self._log_path)
         action_message = {"action": action, "memory": memory, "value": value}
-        json_msg = json.dumps(action_message).encode('utf-8')
-        if len(json_msg) > 12000:
-            logger.warning(str.format(" Sending bytes length: {} ", len(json_msg)))
-        self._conn.send(json_msg)
+        self._send_pack(json.dumps(action_message).encode('utf-8'))
+
+    def _send_pack(self, s):
+        send_msg = struct.pack("!i", len(s)) + s
+        self._conn.send(send_msg)
 
     @staticmethod
     def _flatten(arr):
@@ -438,7 +439,7 @@ class UnityEnvironment(object):
                             .format(b, n_agent if self._brains[b].action_space_type == "discrete" else
                         str(self._brains[b].action_space_size * n_agent), self._brains[b].action_space_type,
                                     str(action[b])))
-            self._conn.send(b"STEP")
+            self._send_pack(b"STEP")
             self._send_action(action, memory, value)
             return self._get_state()
         elif not self._loaded:
@@ -454,7 +455,7 @@ class UnityEnvironment(object):
         Sends a shutdown signal to the unity environment, and closes the socket connection.
         """
         if self._loaded & self._open_socket:
-            self._conn.send(b"EXIT")
+            self._send_pack(b"EXIT")
             self._conn.close()
         if self._open_socket:
             self._socket.close()
